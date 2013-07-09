@@ -7,7 +7,9 @@ var Pipeline = require('node-pipeline');
 var pluginOptions = {
   connection: {
     hosts: ['localhost:9042'],
-    keyspace: 'system'
+    keyspace: 'system',
+    username: "cassandra",
+    password: "cassandra"
   }
 };
 
