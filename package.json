@@ -18,6 +18,15 @@
     "mixdown",
     "plugin"
   ],
+  "dependencies": {
+    "lodash": "1.3.x",
+    "node-cassandra-cql": "0.1.x"
+  },
+  "devDependencies": {
+    "tape": "*",
+    "broadway": "*",
+    "node-pipeline": "*"
+  },
   "author": "tommy@vast.com",
   "license": "MIT",
   "readmeFilename": "README.md",
