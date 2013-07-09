@@ -1,0 +1,25 @@
+{
+  "name": "mixdown-cql",
+  "version": "0.0.0",
+  "description": "Mixdown / Broadway plugin library for Cassandra CQL 3.",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape tests/tap/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tommydudebreaux/mixdown-cql.git"
+  },
+  "keywords": [
+    "cassandra",
+    "node",
+    "cql",
+    "broadway",
+    "mixdown",
+    "plugin"
+  ],
+  "author": "tommy@vast.com",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "gitHead": "866f5806d9e70496738638c838fceaad566a2571"
+}
