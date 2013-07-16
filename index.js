@@ -61,10 +61,10 @@ CassandraPlugin.prototype.init = function(done) {
 
   var cqlClient = new Client(options.connection);
   cqlClient.connect(function(err) {
-    debugger;
     if (!err) {
       cassandra.client = cqlClient;
     }
+
     done(err);
   });
 };
