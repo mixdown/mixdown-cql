@@ -1,5 +1,5 @@
 var _ = require('lodash');
-var Client = require('node-cassandra-cql').Client;
+var helenus = require('helenus');
 
 var CassandraPlugin = function() {};
 
@@ -10,59 +10,113 @@ CassandraPlugin.prototype.attach = function(options) {
     options: options || {
       connection: {}
     },
-    client: null,
+    pool: null,
 
-    // super generic execute relay.  
-    // TODO: determine what queries should be called and move them to proper api calls.
-    execute: function(query, args, consistency, callback) {
-      var cqlClient = cassandra.client;
+    // Execute CQL against the db.
+    cql: function(query, args, callback) {
+      var pool = cassandra.pool;
 
-      if (!cqlClient) {
-        var cb = arguments.length === 3 ? consistency : callback;
-        cb(new Error('Cassandra client not initialized.  Did you initialize this plugin?'));
+      if (!pool) {
+        callback(new Error('Cassandra connection pool not initialized.  Did you initialize this plugin?'));
         return;
       }
 
-      cqlClient.execute.apply(cqlClient, arguments);
+/*
 
-    }
+{
+    "0": {
+      "name": "id",
+      "value": -1234,
+      "timestamp": null,
+      "ttl": null
+    },
+    "1": {
+      "name": "col1",
+      "value": "{\"foo\":\"bar\",\"bar\":\"baz\"}",
+      "timestamp": "2013-07-17T01:12:03.641Z",
+      "ttl": null
+    },
+    "key": "ÀH\u0000\u0000\u0000\u0000\u0000",
+    "_map": {
+      "id": 0,
+      "col1": 1
+    },
+    "_schema": {
+      "name_types": {
+        "id": "AsciiType"
+      },
+      "value_types": {
+        "id": "DoubleType",
+        "col1": "UTF8Type"
+      },
+      "default_name_type": "UTF8Type",
+      "default_value_type": "UTF8Type"
+    },
+    "length": 2,
+    "count": 2
+  }
+
+  */
+      pool.cql(query, args, function(err, results) {
+
+        if (results) {
+          results.rows = _.map(results, function(row) {
+            var obj = {};
+            _.each(row._map, function(i, k) {
+              obj[k] = row[i].value;
+            });
+            return obj;
+          });
+        }
+
+        callback( err, results);
+      });
+
+    },
+
+    thrift: { /* TODO: implement thrift access methods */ }
   };
 
   this.consumer.cassandra = cassandra;
 };
 
 CassandraPlugin.prototype.detach = function(options) {
-  var client = this.consumer.cassandra.client;
+  var pool = this.consumer.cassandra.pool;
 
-  if (client) {
-    client.shutdown();
+  if (pool) {
+    pool.close();
+    this.consumer.cassandra = {};
   }
 };
 
 CassandraPlugin.prototype.init = function(done) {
   var cassandra = this.consumer.cassandra;
   var options = cassandra.options;
-  
+
   options.connection = _.defaults(options.connection, {
-    hosts: ['localhost:9042'],
+    hosts: ['localhost:9061'],
     keyspace: 'system'
   });
 
-// console.log(require('util').inspect(options));
+  // https://github.com/simplereach/helenus#cql
+  // pool = new helenus.ConnectionPool({
+  //   hosts      : ['localhost:9160'],
+  //   keyspace   : 'helenus_test',
+  //   user       : 'test',
+  //   password   : 'test1233',
+  //   timeout    : 3000
+  //   //cqlVersion : '3.0.0' // specify this if you're using Cassandra 1.1 and want to use CQL 3
+  // });
+  var pool = new helenus.ConnectionPool(options.connection);
+  
+  pool.on('error', function(err){
+    // TODO: remove this before committing and decide how to bubble up from the plugin.
+    console.error(err.name, err.message);
+  });
 
-  // https://github.com/jorgebay/node-cassandra-cql#using-it
- //  Client() accepts an objects with these slots:
- //  hosts : String list in host:port format. Port is optional (defaults to 9042).
- //  keyspace : Name of keyspace to use.
- //  username : User for authentication (optional).
- //  password : Password for authentication (optional).
- //  version : Currently only '3.0.0' is supported (optional).
- //  staleTime : Time in milliseconds before trying to reconnect(optional).
-
-  var cqlClient = new Client(options.connection);
-  cqlClient.connect(function(err) {
+  pool.connect(function(err) {
     if (!err) {
-      cassandra.client = cqlClient;
+      cassandra.pool = pool;
     }
 
     done(err);

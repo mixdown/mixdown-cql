@@ -1,4 +1,15 @@
 mixdown-cql
 ===========
 
-Mixdown / Broadway plugin library for Cassandra CQL 3.
+Mixdown / Broadway plugin driver for Cassandra.  
+
+TODO
+====
+* Bubble the error event from the connection pool.
+* Implement thrift interfaces.
+
+Acknowledgements
+================
+
+Implementation uses [helenus](https://github.com/simplereach/helenus).
+
