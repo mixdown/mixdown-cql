@@ -21,55 +21,28 @@ CassandraPlugin.prototype.attach = function(options) {
         return;
       }
 
-/*
+      if (arguments.length === 2 && typeof(args) === 'function') {
+        callback = args;
+        args = null;
+      }
 
-{
-    "0": {
-      "name": "id",
-      "value": -1234,
-      "timestamp": null,
-      "ttl": null
-    },
-    "1": {
-      "name": "col1",
-      "value": "{\"foo\":\"bar\",\"bar\":\"baz\"}",
-      "timestamp": "2013-07-17T01:12:03.641Z",
-      "ttl": null
-    },
-    "key": "ÀH\u0000\u0000\u0000\u0000\u0000",
-    "_map": {
-      "id": 0,
-      "col1": 1
-    },
-    "_schema": {
-      "name_types": {
-        "id": "AsciiType"
-      },
-      "value_types": {
-        "id": "DoubleType",
-        "col1": "UTF8Type"
-      },
-      "default_name_type": "UTF8Type",
-      "default_value_type": "UTF8Type"
-    },
-    "length": 2,
-    "count": 2
-  }
-
-  */
-      pool.cql(query, args, function(err, results) {
+      pool.cql(query, args, function(err, res) {
+        var results = res;
 
         if (results) {
-          results.rows = _.map(results, function(row) {
-            var obj = {};
-            _.each(row._map, function(i, k) {
-              obj[k] = row[i].value;
-            });
-            return obj;
-          });
+          results = {
+            raw: results,
+            rows: _.map(results, function(row) {
+              var obj = {};
+              _.each(row._map, function(i, k) {
+                obj[k] = row[i].value;
+              });
+              return obj;
+            })
+          };
         }
 
-        callback( err, results);
+        callback(err, results);
       });
 
     },
