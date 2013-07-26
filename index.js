@@ -57,6 +57,7 @@ CassandraPlugin.prototype.detach = function(options) {
   var pool = this.consumer.cassandra.pool;
 
   if (pool) {
+    pool.removeAllListeners('close');
     pool.close();
     this.consumer.cassandra = {};
   }
@@ -82,9 +83,24 @@ CassandraPlugin.prototype.init = function(done) {
   // });
   var pool = new helenus.ConnectionPool(options.connection);
   
+  // try reconnect
+  var reconnect = function() {
+    pool.connect(function(err) {
+      if (err) {
+        setTimeout(reconnect, 100);
+      }
+    });
+  };
+
   pool.on('error', function(err){
     // TODO: remove this before committing and decide how to bubble up from the plugin.
     console.error(err.name, err.message);
+
+    reconnect();
+  });
+
+  pool.on('close', function(){
+    reconnect();
   });
 
   pool.connect(function(err) {
