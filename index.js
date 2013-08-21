@@ -4,44 +4,44 @@ var Client = require('node-cassandra-cql').Client;
 var CassandraPlugin = function() {};
 
 CassandraPlugin.prototype.attach = function(options) {
-  this.consumer = this.consumer || {};
+  this.cassandraClient = {};
 
-  var cassandra = {
+  var cassandraClient = {
     options: options || {
       connection: {}
     },
-    client: null,
+    pool: null,
 
     // super generic execute relay.  
     // TODO: determine what queries should be called and move them to proper api calls.
-    execute: function(query, args, consistency, callback) {
-      var cqlClient = cassandra.client;
+    cql: function(query, args, consistency, callback) {
+      var pool = cassandraClient.pool;
 
-      if (!cqlClient) {
+      if (!pool) {
         var cb = arguments.length === 3 ? consistency : callback;
         cb(new Error('Cassandra client not initialized.  Did you initialize this plugin?'));
         return;
       }
 
-      cqlClient.execute.apply(cqlClient, arguments);
+      pool.execute.apply(pool, arguments);
 
     }
   };
 
-  this.consumer.cassandra = cassandra;
+  this.cassandraClient = cassandraClient;
 };
 
 CassandraPlugin.prototype.detach = function(options) {
-  var client = this.consumer.cassandra.client;
+  var client = this.cassandraClient.pool;
 
-  if (client) {
-    client.shutdown();
+  if (pool) {
+    pool.shutdown();
   }
 };
 
 CassandraPlugin.prototype.init = function(done) {
-  var cassandra = this.consumer.cassandra;
-  var options = cassandra.options;
+  var cassandraClient = this.cassandraClient;
+  var options = cassandraClient.options;
   
   options.connection = _.defaults(options.connection, {
     hosts: ['localhost:9042'],
@@ -59,10 +59,10 @@ CassandraPlugin.prototype.init = function(done) {
  //  version : Currently only '3.0.0' is supported (optional).
  //  staleTime : Time in milliseconds before trying to reconnect(optional).
 
-  var cqlClient = new Client(options.connection);
-  cqlClient.connect(function(err) {
+  var pool = new Client(options.connection);
+  pool.connect(function(err) {
     if (!err) {
-      cassandra.client = cqlClient;
+      cassandraClient.pool = pool;
     }
 
     done(err);

@@ -45,7 +45,7 @@ test('Create keyspace, Insert data, Run query', function(t) {
 
     t.notOk(err, 'Init should not return error');
 
-    app.consumer.cassandra.client.on('log', function(level, msg) {
+    app.cassandraClient.pool.on('log', function(level, msg) {
       console.log(level + ": " + msg);
     });
 
@@ -58,7 +58,7 @@ test('Create keyspace, Insert data, Run query', function(t) {
 
       t.notOk(err, 'Create keyspace, insert data should not return error');
 
-      app.consumer.cassandra.execute('SELECT * FROM unittest.testdata', [], function(err, selectResults) {
+      app.cassandraClient.cql('SELECT * FROM unittest.testdata', [], function(err, selectResults) {
         
         if (err) {
           console.log(util.inspect(err));
@@ -73,23 +73,23 @@ test('Create keyspace, Insert data, Run query', function(t) {
     });
 
     plCreate.use(function(results, next) {
-      app.consumer.cassandra.execute('DROP KEYSPACE unittest', [], function() { next(); });
+      app.cassandraClient.cql('DROP KEYSPACE unittest', [], function() { next(); });
     });
 
     plCreate.use(function(results, next) {
-      app.consumer.cassandra.execute(
+      app.cassandraClient.cql(
       'CREATE KEYSPACE unittest WITH replication = {\'class\': \'SimpleStrategy\', \'replication_factor\' : 1}'
       ,[], next);
     });
 
     plCreate.use(function(results, next) {
-      app.consumer.cassandra.execute(
+      app.cassandraClient.cql(
       'CREATE TABLE unittest.testdata (id double PRIMARY KEY, col1 text)' 
       ,[], next);
     });
 
     plCreate.use(function(results, next) {
-      app.consumer.cassandra.execute(
+      app.cassandraClient.cql(
       'BEGIN BATCH ' + 
       'INSERT INTO unittest.testdata (id, col1) VALUES (-1234, ?) ' +
       'INSERT INTO unittest.testdata (id, col1) VALUES (1234, ?) ' +

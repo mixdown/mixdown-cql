@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "lodash": "1.3.x",
-    "node-cassandra-cql": "0.1.x"
+    "node-cassandra-cql": "~0.1.10"
   },
   "devDependencies": {
     "tape": "*",
@@ -29,6 +29,5 @@
   },
   "author": "tommy@vast.com",
   "license": "MIT",
-  "readmeFilename": "README.md",
-  "gitHead": "866f5806d9e70496738638c838fceaad566a2571"
+  "readmeFilename": "README.md"
 }
