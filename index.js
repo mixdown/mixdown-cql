@@ -17,13 +17,45 @@ CassandraPlugin.prototype.attach = function(options) {
     cql: function(query, args, consistency, callback) {
       var pool = cassandraClient.pool;
 
+      if (arguments.length === 3) {
+        callback = consistency;
+        consistency = null;
+      }
+
       if (!pool) {
-        var cb = arguments.length === 3 ? consistency : callback;
-        cb(new Error('Cassandra client not initialized.  Did you initialize this plugin?'));
+        callback(new Error('Cassandra client not initialized.  Did you initialize this plugin?'));
         return;
       }
 
-      pool.execute.apply(pool, arguments);
+      pool.execute.call(pool, query, args, consistency, function(err, data) {
+        var results = null;
+
+        if (!err && data) {
+          var columnMeta = data.meta.columns;
+
+          if (data) {
+            results = {
+              raw: data,
+              rows: _.map(data.rows, function(row) {
+
+                // convery array row into object row.  
+                var formattedRow = {};
+
+                // column meta data tells us what position each value lives and what to name it.
+                columnMeta.forEach(function(col, i) {
+                  formattedRow[col.column_name] = row[i];
+                });
+
+                // now return the objectified row.
+                return formattedRow;
+              })
+
+            };
+          }
+        }
+
+        callback(err, results);
+      });
 
     }
   };
