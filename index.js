@@ -45,7 +45,7 @@ var CassandraPlugin = function(namespace) {
 
                   // column meta data tells us what position each value lives and what to name it.
                   columnMeta.forEach(function(col, i) {
-                    formattedRow[col.column_name] = row[i];
+                    formattedRow[col.name] = row[i];
                   });
 
                   // now return the objectified row.
