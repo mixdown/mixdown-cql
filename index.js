@@ -1,5 +1,6 @@
 var _ = require('lodash');
-var Client = require('node-cassandra-cql').Client;
+var cql = require('node-cassandra-cql');
+var Client = cql.Client;
 
 var CassandraPlugin = function(namespace) {
   namespace = namespace || 'cassandraClient';
@@ -8,6 +9,7 @@ var CassandraPlugin = function(namespace) {
 
   this.attach = function(opt) {
     options = opt || {
+      consistency: cql.types.consistencies.quorum,
       connection: {}
     };
 
@@ -21,7 +23,7 @@ var CassandraPlugin = function(namespace) {
 
         if (arguments.length === 3) {
           callback = consistency;
-          consistency = null;
+          consistency = options.consistency;
         }
 
         if (!pool) {
@@ -100,7 +102,7 @@ var CassandraPlugin = function(namespace) {
    //  version : Currently only '3.0.0' is supported (optional).
    //  staleTime : Time in milliseconds before trying to reconnect(optional).
 
-    var pool = new Client(options.connection);
+    var pool = new cql.Client(options.connection);
     pool.connect(function(err) {
       if (!err) {
         client.pool = pool;
