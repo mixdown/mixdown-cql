@@ -8,10 +8,10 @@ var CassandraPlugin = function(namespace) {
   var options = null;
 
   this.attach = function(opt) {
-    options = opt || {
+    options = _.defaults(opt || {}, {
       consistency: cql.types.consistencies.quorum,
       connection: {}
-    };
+    });
 
     this[namespace] = client = {
       pool: null,
