@@ -1,6 +1,6 @@
 {
   "name": "mixdown-cql",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Mixdown / Broadway plugin library for Cassandra CQL 3.",
   "main": "index.js",
   "scripts": {
