@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "lodash": "~2.2.0",
-    "node-cassandra-cql": "~0.2.4"
+    "node-cassandra-cql": "~0.3.0"
   },
   "devDependencies": {
     "tape": "*",
