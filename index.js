@@ -16,7 +16,7 @@ var CassandraPlugin = function(namespace) {
     this[namespace] = client = {
       pool: null,
 
-      // super generic execute relay.  
+      // super generic execute relay.
       // TODO: determine what queries should be called and move them to proper api calls.
       cql: function(query, args, consistency, callback) {
         var pool = client.pool;
@@ -34,15 +34,15 @@ var CassandraPlugin = function(namespace) {
         pool.execute.call(pool, query, args, consistency, function(err, data) {
           var results = null;
 
-          if (!err && data && data.meta) {
-            var columnMeta = data.meta.columns;
+          if (!err && data) {
+            var columnMeta = data.meta ? data.meta.columns : [];
 
             if (data) {
               results = {
                 raw: data,
                 rows: _.map(data.rows, function(row) {
 
-                  // convery array row into object row.  
+                  // convery array row into object row.
                   var formattedRow = {};
 
                   // column meta data tells us what position each value lives and what to name it.
@@ -85,7 +85,7 @@ var CassandraPlugin = function(namespace) {
       done(new Error('Cannot init plugin because cql client is not attached.'));
       return;
     }
-    
+
     options.connection = _.defaults(options.connection, {
       hosts: ['localhost:9042'],
       keyspace: 'system'
