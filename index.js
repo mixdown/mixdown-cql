@@ -36,31 +36,26 @@ var CassandraPlugin = function(namespace) {
 
           if (!err && data) {
             var columnMeta = data.meta ? data.meta.columns : [];
+            results = {
+              raw: data,
+              rows: _.map(data.rows, function(row) {
+                // convery array row into object row.
+                var formattedRow = {};
 
-            if (data) {
-              results = {
-                raw: data,
-                rows: _.map(data.rows, function(row) {
+                // column meta data tells us what position each value lives and what to name it.
+                columnMeta.forEach(function(col, i) {
+                  formattedRow[col.name] = row[col.name];
+                });
 
-                  // convery array row into object row.
-                  var formattedRow = {};
+                // now return the objectified row.
+                return formattedRow;
+              })
 
-                  // column meta data tells us what position each value lives and what to name it.
-                  columnMeta.forEach(function(col, i) {
-                    formattedRow[col.name] = row[i];
-                  });
-
-                  // now return the objectified row.
-                  return formattedRow;
-                })
-
-              };
-            }
+            };
           }
 
           callback(err, results);
         });
-
       }
     };
   };
@@ -91,9 +86,7 @@ var CassandraPlugin = function(namespace) {
       keyspace: 'system'
     });
 
-  // console.log(require('util').inspect(options));
-
-    // https://github.com/jorgebay/node-cassandra-cql#using-it
+   //  https://github.com/jorgebay/node-cassandra-cql#using-it
    //  Client() accepts an objects with these slots:
    //  hosts : String list in host:port format. Port is optional (defaults to 9042).
    //  keyspace : Name of keyspace to use.
@@ -103,6 +96,13 @@ var CassandraPlugin = function(namespace) {
    //  staleTime : Time in milliseconds before trying to reconnect(optional).
 
     var pool = new cql.Client(options.connection);
+
+    if(options.debugLog && logger) {
+        pool.on('log',function(lvl,msg){
+        logger.debug('CQL:' + lvl + '-' + msg);
+      });  
+    }
+
     pool.connect(function(err) {
       if (!err) {
         client.pool = pool;
